@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#050505">
+  <meta name="description" content="Kaiju tracker for @kaijuinvestor. Movies, TV and anime, games, and figures.">
+  <title>Kaiju Tracker</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23050505'/%3E%3Cpath fill='%23d62027' d='M16 4.2l3.2 7.6 8.2.7-6.2 5.4 1.9 8.1L16 21.8 8.9 26l1.9-8.1L4.6 12.5l8.2-.7L16 4.2z'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600;700&family=Russo+One&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --red: #d62027;
+      --ink: #ffffff;
+      --muted: rgba(255, 255, 255, 0.78);
+      --line: rgba(255, 255, 255, 0.16);
+      --card: rgba(6, 6, 8, 0.9);
+      --display: "Russo One", "Arial Black", Impact, sans-serif;
+      --body: "Barlow", "Segoe UI", Helvetica, Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body { min-height: 100%; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: var(--body);
+      font-size: 16px;
+      line-height: 1.4;
+      background: #050505;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .backdrop,
+    .overlay {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .backdrop {
+      z-index: -2;
+      background: #050505 url("img/backdrop.jpg") center 28% / cover no-repeat;
+    }
+
+    .overlay {
+      z-index: -1;
+      background:
+        linear-gradient(180deg, rgba(0, 0, 0, 0.62) 0%, rgba(0, 0, 0, 0.48) 26%, rgba(0, 0, 0, 0.78) 62%, rgba(0, 0, 0, 0.86) 100%);
+    }
+
+    .wrap {
+      width: min(1080px, calc(100% - 28px));
+      margin: 0 auto;
+      padding-bottom: 56px;
+    }
+
+    .hero { padding: 28px 0 6px; }
+
+    .hero h1 {
+      margin: 0;
+      font-family: var(--display);
+      font-size: clamp(2.35rem, 12vw, 4.6rem);
+      font-weight: 400;
+      letter-spacing: 0.03em;
+      line-height: 0.92;
+      text-shadow: 0 2px 18px rgba(0, 0, 0, 0.85);
+    }
+
+    .handle {
+      display: inline-block;
+      margin-top: 10px;
+      color: var(--ink);
+      font-weight: 700;
+      font-size: 1.05rem;
+      text-decoration: none;
+      border-bottom: 2px solid var(--red);
+    }
+
+    .handle:hover,
+    .handle:focus-visible { color: var(--red); }
+
+    .progress {
+      margin: 16px 0 0;
+      font-family: var(--display);
+      font-size: clamp(1.05rem, 4.5vw, 1.45rem);
+      letter-spacing: 0.03em;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+    }
+
+    .showing {
+      min-height: 1.2em;
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .controls {
+      position: sticky;
+      top: 0;
+      z-index: 4;
+      margin: 16px 0 8px;
+      padding: 10px 0 12px;
+      background: #050505;
+      border-bottom: 1px solid rgba(214, 32, 39, 0.85);
+    }
+
+    .tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+
+    .tabs button {
+      min-height: 44px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.45);
+      color: var(--muted);
+      font-family: var(--display);
+      font-size: 0.78rem;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+    }
+
+    .tabs button[aria-selected="true"] {
+      background: var(--red);
+      border-color: var(--red);
+      color: white;
+    }
+
+    .tabs button:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    a:focus-visible {
+      outline: 2px solid var(--red);
+      outline-offset: 2px;
+    }
+
+    .tools {
+      display: grid;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    input,
+    select {
+      width: 100%;
+      min-height: 44px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.72);
+      color: white;
+      font: inherit;
+      font-size: 16px;
+    }
+
+    select option { background: #111; color: white; }
+
+    .section h2 {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      margin: 22px 0 10px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid rgba(214, 32, 39, 0.85);
+      font-family: var(--display);
+      font-size: 1.2rem;
+      font-weight: 400;
+      letter-spacing: 0.05em;
+    }
+
+    .section h2 span {
+      color: var(--red);
+      font-size: 0.92rem;
+      letter-spacing: 0.03em;
+    }
+
+    .list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .card {
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-left: 3px solid rgba(255, 255, 255, 0.22);
+      border-radius: 10px;
+      background: var(--card);
+    }
+
+    .card.done { border-left-color: var(--red); }
+
+    .card.sample { border-style: dashed; }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+    }
+
+    .card h3 {
+      margin: 0;
+      min-width: 0;
+      font-size: 1.05rem;
+      font-weight: 700;
+      line-height: 1.25;
+      overflow-wrap: break-word;
+    }
+
+    .year {
+      flex: none;
+      color: var(--red);
+      font-family: var(--display);
+      font-size: 0.95rem;
+    }
+
+    .card-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 4px 8px;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      border-radius: 999px;
+      color: white;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .pill.done {
+      background: var(--red);
+      border-color: var(--red);
+    }
+
+    .stars {
+      display: flex;
+      gap: 2px;
+      margin: 0;
+    }
+
+    .star {
+      width: 16px;
+      height: 16px;
+      color: rgba(255, 255, 255, 0.28);
+    }
+
+    .star.on { color: var(--red); }
+
+    .notes {
+      margin: 8px 0 0;
+      color: rgba(255, 255, 255, 0.88);
+      font-size: 0.95rem;
+    }
+
+    .empty,
+    .error {
+      margin: 24px 0;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--card);
+    }
+
+    .error { border-color: var(--red); }
+
+    footer {
+      margin-top: 36px;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    footer p { margin: 0 0 8px; }
+
+    footer a {
+      color: white;
+      text-decoration: none;
+      border-bottom: 1px solid var(--red);
+    }
+
+    @media (min-width: 640px) {
+      .tabs { grid-template-columns: repeat(4, 1fr); }
+      .tabs button { font-size: 0.92rem; }
+      .tools { grid-template-columns: 1fr 220px; }
+    }
+
+    @media (min-width: 800px) {
+      .list { grid-template-columns: 1fr 1fr; }
+      .hero { padding-top: 40px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="backdrop" aria-hidden="true"></div>
+  <div class="overlay" aria-hidden="true"></div>
+  <div class="wrap">
+    <header class="hero">
+      <h1>KAIJU TRACKER</h1>
+      <a class="handle" href="https://x.com/kaijuinvestor">@kaijuinvestor</a>
+      <p class="progress" id="progress" aria-live="polite">Loading the list…</p>
+      <p class="showing" id="showing"></p>
+    </header>
+
+    <div class="controls">
+      <div class="tabs" role="tablist" aria-label="Lists">
+        <button type="button" role="tab" id="tab-movies" aria-controls="panel" aria-selected="true">Movies</button>
+        <button type="button" role="tab" id="tab-tv" aria-controls="panel" aria-selected="false">TV &amp; Anime</button>
+        <button type="button" role="tab" id="tab-games" aria-controls="panel" aria-selected="false">Games</button>
+        <button type="button" role="tab" id="tab-figures" aria-controls="panel" aria-selected="false">Figures</button>
+      </div>
+      <div class="tools">
+        <input id="search" type="search" placeholder="Search titles" aria-label="Search titles" autocomplete="off">
+        <select id="group" aria-label="Filter by group">
+          <option value="">All groups</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="panel" role="tabpanel" aria-labelledby="tab-movies"></div>
+
+    <footer>
+      <p>A watchlist kept by <a href="https://x.com/kaijuinvestor">@kaijuinvestor</a>.</p>
+      <p>Backdrop: production still of the 1954 Godzilla suit, from <cite>Godzilla</cite> (1954). Photograph by Toho Company Ltd. Public domain in Japan and the United States. <a href="https://commons.wikimedia.org/wiki/File:Godzilla_(1954).jpg">Wikimedia Commons</a>, 2,617 × 2,022.</p>
+    </footer>
+  </div>
+  <noscript><p class="wrap">This page needs JavaScript to load the lists.</p></noscript>
+
+  <script>
+    const FILES = {
+      movies: "movies.csv",
+      tv: "tv.csv",
+      games: "games.csv",
+      figures: "figures.csv"
+    };
+
+    const TABS = ["movies", "tv", "games", "figures"];
+
+    const DONE = {
+      movies: "seen",
+      tv: "seen",
+      games: "played",
+      figures: "owned"
+    };
+
+    const LABELS = {
+      seen: "Seen",
+      unseen: "Unseen",
+      played: "Played",
+      unplayed: "Unplayed",
+      owned: "Owned",
+      wishlist: "Wishlist"
+    };
+
+    const STAR_PATH = "M12 2.6l2.6 6.1 6.6.6-5 4.4 1.5 6.5L12 17.6 6.3 20.2 7.8 13.7 2.8 9.3l6.6-.6L12 2.6z";
+
+    const data = {};
+    let current = "movies";
+
+    const progressEl = document.getElementById("progress");
+    const showingEl = document.getElementById("showing");
+    const panel = document.getElementById("panel");
+    const searchEl = document.getElementById("search");
+    const groupEl = document.getElementById("group");
+
+    function parseCSV(text) {
+      const rows = [];
+      let row = [];
+      let field = "";
+      let inQuotes = false;
+      const src = text.replace(/^\uFEFF/, "");
+
+      for (let i = 0; i < src.length; i++) {
+        const c = src[i];
+        if (inQuotes) {
+          if (c === '"') {
+            if (src[i + 1] === '"') {
+              field += '"';
+              i++;
+            } else {
+              inQuotes = false;
+            }
+          } else {
+            field += c;
+          }
+        } else if (c === '"') {
+          inQuotes = true;
+        } else if (c === ",") {
+          row.push(field);
+          field = "";
+        } else if (c === "\n") {
+          row.push(field);
+          rows.push(row);
+          row = [];
+          field = "";
+        } else if (c !== "\r") {
+          field += c;
+        }
+      }
+
+      if (field.length || row.length) {
+        row.push(field);
+        rows.push(row);
+      }
+
+      if (!rows.length) return [];
+      const headers = rows[0].map((cell) => cell.trim());
+      return rows.slice(1).map((cells) => {
+        const item = {};
+        headers.forEach((header, index) => {
+          item[header] = (cells[index] || "").trim();
+        });
+        return item;
+      }).filter((item) => item.title && item.title.toLowerCase() !== "title");
+    }
+
+    function tabFromHash() {
+      const name = location.hash.replace("#", "");
+      return TABS.includes(name) ? name : "movies";
+    }
+
+    function isDone(tab, item) {
+      return item.status === DONE[tab];
+    }
+
+    function progressText(tab, rows) {
+      if (tab === "figures") {
+        const owned = rows.filter((item) => item.status === "owned").length;
+        const wishlist = rows.filter((item) => item.status === "wishlist").length;
+        return "Figures owned " + owned + " · Wishlist " + wishlist;
+      }
+      const done = rows.filter((item) => isDone(tab, item)).length;
+      if (tab === "movies") return "Movies seen " + done + "/" + rows.length;
+      if (tab === "tv") return "TV & Anime seen " + done + "/" + rows.length;
+      return "Games played " + done + "/" + rows.length;
+    }
+
+    function createStars(rating) {
+      const wrap = document.createElement("p");
+      wrap.className = "stars";
+      const score = /^[1-5]$/.test(rating) ? Number(rating) : 0;
+      if (!score) {
+        wrap.hidden = true;
+        wrap.setAttribute("aria-label", "Not rated");
+        return wrap;
+      }
+      wrap.setAttribute("aria-label", "Rated " + score + " out of 5");
+      for (let i = 1; i <= 5; i++) {
+        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svg.setAttribute("viewBox", "0 0 24 24");
+        svg.setAttribute("aria-hidden", "true");
+        svg.classList.add("star");
+        if (i <= score) svg.classList.add("on");
+        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        path.setAttribute("fill", "currentColor");
+        path.setAttribute("d", STAR_PATH);
+        svg.appendChild(path);
+        wrap.appendChild(svg);
+      }
+      return wrap;
+    }
+
+    function fillGroups(rows) {
+      const previous = groupEl.value;
+      const groups = [];
+      rows.forEach((item) => {
+        if (item.group && !groups.includes(item.group)) groups.push(item.group);
+      });
+      groupEl.replaceChildren();
+      const all = document.createElement("option");
+      all.value = "";
+      all.textContent = "All groups";
+      groupEl.appendChild(all);
+      groups.forEach((group) => {
+        const option = document.createElement("option");
+        option.value = group;
+        option.textContent = group;
+        groupEl.appendChild(option);
+      });
+      if (groups.includes(previous)) groupEl.value = previous;
+    }
+
+    function render() {
+      const rows = data[current] || [];
+      const query = searchEl.value.trim().toLowerCase();
+      const group = groupEl.value;
+      progressEl.textContent = progressText(current, rows);
+
+      const visible = rows.filter((item) => {
+        if (group && item.group !== group) return false;
+        if (!query) return true;
+        const haystack = [item.title, item.year, item.group, item.status, item.notes]
+          .join(" ")
+          .toLowerCase();
+        return haystack.includes(query);
+      });
+
+      showingEl.textContent = visible.length === rows.length
+        ? ""
+        : "Showing " + visible.length;
+
+      panel.replaceChildren();
+
+      if (!rows.length) {
+        const empty = document.createElement("p");
+        empty.className = "empty";
+        empty.textContent = current === "figures"
+          ? "No figures yet. Add a row to figures.csv."
+          : "Nothing in this list yet.";
+        panel.appendChild(empty);
+        return;
+      }
+
+      if (!visible.length) {
+        const empty = document.createElement("p");
+        empty.className = "empty";
+        empty.textContent = "Nothing matches.";
+        panel.appendChild(empty);
+        return;
+      }
+
+      const sections = [];
+      visible.forEach((item) => {
+        const name = item.group || "Other";
+        let section = sections.find((entry) => entry.name === name);
+        if (!section) {
+          section = { name, items: [] };
+          sections.push(section);
+        }
+        section.items.push(item);
+      });
+
+      sections.forEach((section) => {
+        const block = document.createElement("section");
+        block.className = "section";
+        const heading = document.createElement("h2");
+        heading.append(document.createTextNode(section.name));
+        const count = document.createElement("span");
+        const done = section.items.filter((item) => isDone(current, item)).length;
+        count.textContent = current === "figures"
+          ? String(section.items.length)
+          : done + "/" + section.items.length;
+        heading.appendChild(count);
+        block.appendChild(heading);
+
+        const list = document.createElement("div");
+        list.className = "list";
+        section.items.forEach((item) => list.appendChild(renderCard(item)));
+        block.appendChild(list);
+        panel.appendChild(block);
+      });
+    }
+
+    function renderCard(item) {
+      const card = document.createElement("article");
+      card.className = "card";
+      if (isDone(current, item)) card.classList.add("done");
+      if (/^example\b/i.test(item.title)) card.classList.add("sample");
+
+      const top = document.createElement("div");
+      top.className = "card-top";
+      const title = document.createElement("h3");
+      title.textContent = item.title;
+      top.appendChild(title);
+      if (item.year) {
+        const year = document.createElement("span");
+        year.className = "year";
+        year.textContent = item.year;
+        top.appendChild(year);
+      }
+
+      const meta = document.createElement("div");
+      meta.className = "card-meta";
+      const pill = document.createElement("span");
+      pill.className = "pill";
+      if (isDone(current, item)) pill.classList.add("done");
+      pill.textContent = LABELS[item.status] || item.status || "—";
+      meta.appendChild(pill);
+      meta.appendChild(createStars(item.rating));
+
+      card.append(top, meta);
+      if (item.notes) {
+        const notes = document.createElement("p");
+        notes.className = "notes";
+        notes.textContent = item.notes;
+        card.appendChild(notes);
+      }
+      return card;
+    }
+
+    function setTab(tab, updateHash) {
+      current = tab;
+      TABS.forEach((name) => {
+        const button = document.getElementById("tab-" + name);
+        const selected = name === tab;
+        button.setAttribute("aria-selected", selected ? "true" : "false");
+        button.tabIndex = selected ? 0 : -1;
+      });
+      panel.setAttribute("aria-labelledby", "tab-" + tab);
+      searchEl.value = "";
+      if (updateHash) history.replaceState(null, "", "#" + tab);
+      fillGroups(data[tab] || []);
+      render();
+    }
+
+    async function loadAll() {
+      const entries = await Promise.all(TABS.map(async (tab) => {
+        const response = await fetch(FILES[tab], { cache: "no-cache" });
+        if (!response.ok) throw new Error(FILES[tab] + " (" + response.status + ")");
+        const text = await response.text();
+        return [tab, parseCSV(text)];
+      }));
+      entries.forEach(([tab, rows]) => {
+        data[tab] = rows;
+      });
+      setTab(tabFromHash(), false);
+    }
+
+    document.querySelectorAll("[role='tab']").forEach((button) => {
+      button.addEventListener("click", () => {
+        setTab(button.id.replace("tab-", ""), true);
+      });
+    });
+
+    searchEl.addEventListener("input", render);
+    groupEl.addEventListener("change", render);
+
+    window.addEventListener("hashchange", () => {
+      const next = tabFromHash();
+      if (next !== current) setTab(next, false);
+    });
+
+    loadAll().catch((error) => {
+      progressEl.textContent = "Could not load the lists.";
+      panel.replaceChildren();
+      const message = document.createElement("p");
+      message.className = "error";
+      message.textContent = "The page could not read " + error.message + ". Refresh and try again.";
+      panel.appendChild(message);
+    });
+  </script>
+</body>
+</html>
