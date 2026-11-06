@@ -19,6 +19,16 @@ https://steepedsky.github.io/kaiju-tracker/
 
 Anyone with the link can look. Only someone who can edit this repository can change the lists.
 
+## Using the page
+
+The bar at the top stays put while you scroll.
+
+- **Movies**, **TV & Anime**, **Games**, and **Figures** switch the list. The address ends in `#movies`, `#tv`, `#games`, or `#figures`, so you can link someone straight to a list.
+- The progress line is for the whole list, not just what a search is showing. Movies, shows, and games count how many you have finished, such as `Games played 0/22`. Figures count how many you own and how many are on the wishlist.
+- Search checks the title, year, group, status, and notes. More than one word is fine. Changing lists clears the search and the group chip. Sort stays until you change it or refresh the page.
+- The chips are the groups in that list. Pick one to narrow the list. **All** shows every group again. A new group typed into a csv shows up as its own chip.
+- Sort orders the list by group, year, title, or status. **By group** is the default. It keeps each group together, in the same order as the file. **Still to do** puts what you have not seen, played, or bought first.
+
 ## The four files
 
 | File | What it is | Status words |
@@ -36,7 +46,7 @@ title,year,group,status,rating,notes
 
 - **title** is the name.
 - **year** is the release year. You can leave it blank.
-- **group** is the bucket the filter uses (Showa, Heisei, Anime, and so on). You can type a new group. It will show up in the filter.
+- **group** is the bucket the filter chips use (Showa, Heisei, Anime, and so on). You can type a new group. It shows up as its own chip.
 - **status** is one of the words in the table above. Use lowercase.
 - **rating** is blank, or a number from 1 to 5.
 - **notes** is anything you want to remember. Leave it blank if you have nothing to add.
@@ -91,6 +101,6 @@ That line is a made-up example of the format. Use the name of a figure you actua
 
 ## Add a movie, show, or game
 
-Copy an existing line, paste it underneath, and change the words. Keep the six spots in the same order. The new group name, if you invent one, shows up in the filter by itself.
+Copy an existing line, paste it underneath, and change the words. Keep the six spots in the same order. The new group name, if you invent one, shows up as its own filter chip.
 
-Do not edit `index.html` or the picture in `img` unless you mean to change the website itself. The lists are the csv files.
+Do not edit `index.html`, `style.css`, `app.js`, the `fonts` folder, or the picture in `img` unless you mean to change the website itself. The lists are the csv files.
